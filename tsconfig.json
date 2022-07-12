@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": [ "es6", "DOM", "DOM.Iterable", "ESNext" ],
+    "allowJs": true,
+    "sourceMap": true
+  },
+    "exclude": [
+        "node_modules", "*.d.ts"
+    ],
+    "include": [
+        "src/**/*"
+    ]
+}

@@ -1,0 +1,2 @@
+C:\Users\dante\Documents\Research Project\TS-Proto\obj\Debug\TS-Proto.njsproj.CoreCompileInputs.cache
+C:\Users\dante\Documents\Research Project\TS-Proto\bin\Microsoft.NodejsTools.WebRole.dll
