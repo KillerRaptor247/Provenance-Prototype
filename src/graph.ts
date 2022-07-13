@@ -18,6 +18,36 @@ export class Plot {
     ) {
 
     }
+
+    /**
+* Ensures the previously selected node is no longer selected
+* Selects the new node
+*/
+
+    selectNode(selectedNode: string) {
+        d3.select('.selectedNode')
+            .classed('selectedNode', false)
+            .attr('r', 7);
+
+        d3.select(`#${selectedNode}`)
+            .classed('selectedNode', true)
+            .attr('r', 10);
+    }
+
+    /**
+    * Ensures the previously hovered node is no longer hovered
+    * If hoverNode is not empty, hovers the new node
+    */
+
+    hoverNode(hoverNode: string) {
+        d3.select('.hoverNode')
+            .classed('hoverNode', false);
+
+        if (hoverNode !== '') {
+            d3.select(`#${hoverNode}`)
+                .classed('hoverNode', true);
+        }
+    }
 }
 
 

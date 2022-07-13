@@ -1,6 +1,7 @@
 import { initProvenance, NodeID, createAction } from '@visdesignlab/trrack';
 import { ProvVisCreator } from '@visdesignlab/trrack-vis';
 import Graph, { Plot } from './graph';
+import * as d3 from "d3";
 
 /**
  * interface representing the state of the application
@@ -22,7 +23,7 @@ const initialState: NodeState = {
 type EventTypes = 'Select Node' | 'Hover Node';
 
 // initialize provenance with the first state
-const prov = initProvenance<NodeState, EventTypes, string>(initialState, {
+let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
     loadFromUrl: false,
 });
 
