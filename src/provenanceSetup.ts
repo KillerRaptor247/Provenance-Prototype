@@ -1,4 +1,5 @@
 import { initProvenance, NodeID, createAction } from '@visdesignlab/trrack';
+import '../styles/styles.css'
 import { ProvVisCreator } from '@visdesignlab/trrack-vis';
 import Graph, { Plot } from './graph';
 import * as d3 from "d3";
@@ -27,12 +28,11 @@ let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
     loadFromUrl: false,
 });
 
-// Set up apply action functions for each of the 3 actions that affect state
+// Set up apply action functions for each of the 2 actions that affect state
 
 /**
  * Function called when a node is selected. Applies an action to provenance.
  */
-
 const nodeSelectAction = createAction<NodeState, any, EventTypes>(
     (state: NodeState, newSelected: string) => {
         state.selectedNode = newSelected;

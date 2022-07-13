@@ -1,14 +1,31 @@
 
 <!DOCTYPE html>
-<meta charset="utf-8">
-<link rel="stylesheet" href="styles.css">
-<title>Provenance Tracking Prototype</title>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script type="module" src="../src/graph"></script>
-<script src="https://kit.fontawesome.com/31ba8b7d44.js" crossorigin="anonymous"></script>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>Provenance Tracking Prototype</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script type="module" src="../src/provenanceSetup"></script>
+    <script type="module" src="../src/graph"></script>
+    <script data-search-pseudo-elements defer src="https://kit.fontawesome.com/487aa15d6f.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/31ba8b7d44.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    </head>
+<body>
 
+    <div id="parent">
+        <div id="mainDiv">
+        </div>
 
-<svg width="0" height="0"><div id="graph"></div></svg>
+        <div id="provDiv">
+        </div>
+    </div>
 
-
-<script type="module" src="../utils/search"></script>
+    <div id="buttons"></div>
+    <svg width="0" height="0"><div id="graph"></div></svg>
+    <script type="module" src="../utils/search"></script>
+</body>
+</html>
