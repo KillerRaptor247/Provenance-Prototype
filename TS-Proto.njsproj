@@ -44,7 +44,7 @@
     <Folder Include="src\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\test.ts">
+    <TypeScriptCompile Include="src\provenanceSetup.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>
