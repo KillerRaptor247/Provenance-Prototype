@@ -23,6 +23,8 @@
         "@visdesignlab/trrack": "^2.0.0-alpha.10",
         "@visdesignlab/trrack-vis": "^2.0.0-alpha.12",
         "d3": "^7.6.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "webpack-dev-server": "^4.9.3"
     }
 }

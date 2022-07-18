@@ -38,7 +38,7 @@ export class Plot {
         this.width = 0;
         this.height = 0;
         this.data = [];
-        this.svg = d3.select('#mainDiv')
+        this.svg = d3.select('#graph')
             .append('svg');
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
@@ -55,16 +55,7 @@ export class Plot {
                 this.height = 800 - this.margin.top - this.margin.bottom;
 
 
-                // this.xScale.domain([
-                //     d3.min(this.data, (innerD) => +innerD.x)!,
-                //     d3.max(this.data, (innerD) => +innerD.x)!,
-                // ]);
                 this.xScale.range([50, 750]);
-
-                // this.yScale.domain([
-                //     d3.min(this.data, (innerD) => +innerD.y)!,
-                //     d3.max(this.data, (innerD) => +innerD.y)!,
-                // ]);
                 this.yScale.range([50, 750]);
 
                 this.initializeVis(selectNodeFunc, hoverNodeFunc);
@@ -94,11 +85,10 @@ export class Plot {
     }
 
 
-    /**
+/**
 * Ensures the previously selected node is no longer selected
 * Selects the new node
 */
-
     selectNode(selectedNode: string) {
         d3.select('.selectedNode')
             .classed('selectedNode', false)
@@ -109,11 +99,10 @@ export class Plot {
             .attr('r', 10);
     }
 
-    /**
+/**
 * Ensures the previously hovered node is no longer hovered
 * If hoverNode is not empty, hovers the new node
 */
-
     hoverNode(hoverNode: string) {
         d3.select('.hoverNode')
             .classed('hoverNode', false);

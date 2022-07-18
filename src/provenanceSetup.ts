@@ -21,18 +21,19 @@ import resetLinkColor from "../utils/resetLinkColor";
 export interface NodeState {
     selectedNode: string;
     hoveredNode: string;
+    // addNode: string;
 }
 
 /**
  * Initial state
  */
-
 const initialState: NodeState = {
     selectedNode: 'none',
     hoveredNode: 'none',
+    //addNode: 'none'
 };
 
-type EventTypes = 'Select Node' | 'Hover Node';
+type EventTypes = 'Select Node' | 'Hover Node' /*| 'Add Node'*/;
 
 // initialize provenance with the first state
 let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
@@ -53,9 +54,17 @@ const nodeSelectAction = createAction<NodeState, any, EventTypes>(
 const selectNodeUpdate = function (newSelected: string) {
     console.log("INSIDE SELECT NODE");
     nodeSelectAction.setLabel(`${newSelected} Selected`).setEventType('Select Node');
-
     prov.apply(nodeSelectAction(newSelected));
 };
+
+/*
+const addNodeAction = createAction<NodeState, any, EventTypes > (
+    (state: NodeState, addNode: string) => {
+        state.addNode = addNode;
+    },
+);
+
+const addNodeUpdate = function(addNode: )*/
 
 /**
  * Function called when a node is hovered. Applies an action to provenance.

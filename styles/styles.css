@@ -125,17 +125,16 @@ div.tooltip {
     pointer-events: none;
 }
 
-#mainDiv {
-    border: 1px solid black;
-    max-height: 800px;
-    display: flex;
-    float: left
+#graph {
+  max-height: 800px;
+  display: flex;
+  float: left;
 }
 
 #provDiv {
-    max-width: 300px;
-    display: flex;
-    float: right;
+  float: right;
+  max-width: 400px;
+  display: flex;
 }
 
 #parent {
