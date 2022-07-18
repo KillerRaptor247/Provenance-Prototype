@@ -12,21 +12,13 @@ import resetLinkColor from "../utils/resetLinkColor";
 
 export class Plot {
     margin: any;
-
     width: number;
-
     height: number;
-
     quartetNum: string;
-
     data: any[];
-
     svg: d3.Selection<SVGSVGElement, any, HTMLElement, any>;
-
     xScale: d3.ScaleLinear<number, number>;
-
     yScale: d3.ScaleLinear<number, number>;
-
     selectNodeFunc: (s: string) => void;
 
 
@@ -35,16 +27,14 @@ export class Plot {
         hoverNodeFunc: (s: string) => void,
     ) {
         this.margin = {};
-        this.width = 0;
+        this.width  = 0;
         this.height = 0;
-        this.data = [];
-        this.svg = d3.select('#graph')
-            .append('svg');
+        this.data   = [];
+        this.svg    = d3.select('#graph').append('svg');
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
         this.selectNodeFunc = selectNodeFunc;
 
-        // d3.json('http://localhost:8000/data/services.json').
         d3.json('https://demo6704570.mockable.io/ptracking').
             then((d) => {
                 this.data = d;
@@ -53,11 +43,8 @@ export class Plot {
                 };
                 this.width = 800 - this.margin.left - this.margin.right;
                 this.height = 800 - this.margin.top - this.margin.bottom;
-
-
                 this.xScale.range([50, 750]);
                 this.yScale.range([50, 750]);
-
                 this.initializeVis(selectNodeFunc, hoverNodeFunc);
             });
     }
@@ -85,24 +72,27 @@ export class Plot {
     }
 
 
-/**
-* Ensures the previously selected node is no longer selected
-* Selects the new node
-*/
+    /*
+     * Ensures the previously selected node is no longer selected
+     * Selects the new node
+     */
     selectNode(selectedNode: string) {
+
+        // previous selected node is no longer selected thus set to false
         d3.select('.selectedNode')
             .classed('selectedNode', false)
             .attr('r', 7);
 
+        // selected node is set to true
         d3.select(`#${selectedNode}`)
             .classed('selectedNode', true)
             .attr('r', 10);
     }
 
-/**
-* Ensures the previously hovered node is no longer hovered
-* If hoverNode is not empty, hovers the new node
-*/
+    /*
+    * Ensures the previously hovered node is no longer hovered
+    * If hoverNode is not empty, hovers the new node
+    */
     hoverNode(hoverNode: string) {
         d3.select('.hoverNode')
             .classed('hoverNode', false);
@@ -113,9 +103,6 @@ export class Plot {
         }
     }
 }
-
-
-
 
 
 let nodes = [...baseNodes]
@@ -142,8 +129,7 @@ var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 var textGroup = svg.append('g').attr('class', 'texts')
 
-// we use this reference to select/deselect
-// after clicking the same element twice
+// we use this reference to select/deselect after clicking the same element twice
 var selectedId
 
 // simulation setup with all forces
