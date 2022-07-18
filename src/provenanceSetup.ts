@@ -1,19 +1,19 @@
-import { initProvenance, NodeID, createAction } from '@visdesignlab/trrack';
-import '../styles/styles.css'
+import { createAction, initProvenance, NodeID } from '@visdesignlab/trrack';
 import { ProvVisCreator } from '@visdesignlab/trrack-vis';
-import Graph, { Plot } from './graph';
 import * as d3 from "d3";
-
+import baseLinks from '.././data/links';
 // import * as d3 from 'd3'
-import baseNodes from '.././data/nodes'
-import baseLinks from '.././data/links'
-import getLinkColor from "../utils/getLinkColor"
-import getNodeColor from "../utils/getNodeColor"
-import getTextColor from "../utils/getTextColor"
-import getNeighbors from "../utils/getNeighbors"
+import baseNodes from '.././data/nodes';
+import '../styles/styles.css';
+import getLinkColor from "../utils/getLinkColor";
+import getNeighbors from "../utils/getNeighbors";
+import getNodeColor from "../utils/getNodeColor";
+import getTextColor from "../utils/getTextColor";
+import resetLinkColor from "../utils/resetLinkColor";
 import resetNodeColor from "../utils/resetNodeColor";
 import resetTextColor from "../utils/resetTextColor";
-import resetLinkColor from "../utils/resetLinkColor";
+import { Plot } from './graph';
+
 
 /**
  * interface representing the state of the application
@@ -263,7 +263,7 @@ function selectNode(event, selectedNode) {
         resetData()
         updateSimulation()
     } else {
-        selectNodeUpdate(`node_${selectedNode.id}`)
+        selectNodeUpdate(selectedNode.label)
         selectedId = selectedNode.id
         updateData(selectedNode)
         updateSimulation()
@@ -273,6 +273,14 @@ function selectNode(event, selectedNode) {
         nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
         textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
         linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
+    }
+}
+
+// we want the dragged node function to be called when the node
+// is finished dragging not at the start
+function draggedNode(event, draggedNode) {
+    if (selectedId === draggedNode.id) {
+
     }
 }
 
