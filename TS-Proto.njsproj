@@ -44,6 +44,7 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="README.md" />
+    <Content Include="styles\images\bg.jpg" />
     <Content Include="styles\styles.css">
       <SubType>Code</SubType>
     </Content>
@@ -56,6 +57,7 @@
     <Folder Include="data\" />
     <Folder Include="styles\" />
     <Folder Include="src\types\" />
+    <Folder Include="styles\images\" />
     <Folder Include="utils\" />
     <Folder Include="src\" />
   </ItemGroup>

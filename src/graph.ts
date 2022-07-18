@@ -27,6 +27,8 @@ export class Plot {
 
     yScale: d3.ScaleLinear<number, number>;
 
+    selectNodeFunc: (s: string) => void;
+
 
     constructor(
         selectNodeFunc: (s: string) => void,
@@ -40,8 +42,10 @@ export class Plot {
             .append('svg');
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
+        this.selectNodeFunc = selectNodeFunc;
 
-        d3.json('../data/services.json').
+        // d3.json('http://localhost:8000/data/services.json').
+        d3.json('https://demo6704570.mockable.io/ptracking').
             then((d) => {
                 this.data = d;
                 this.margin = {
@@ -51,16 +55,16 @@ export class Plot {
                 this.height = 800 - this.margin.top - this.margin.bottom;
 
 
-                this.xScale.domain([
-                    d3.min(this.data, (innerD) => +innerD.x)!,
-                    d3.max(this.data, (innerD) => +innerD.x)!,
-                ]);
+                // this.xScale.domain([
+                //     d3.min(this.data, (innerD) => +innerD.x)!,
+                //     d3.max(this.data, (innerD) => +innerD.x)!,
+                // ]);
                 this.xScale.range([50, 750]);
 
-                this.yScale.domain([
-                    d3.min(this.data, (innerD) => +innerD.y)!,
-                    d3.max(this.data, (innerD) => +innerD.y)!,
-                ]);
+                // this.yScale.domain([
+                //     d3.min(this.data, (innerD) => +innerD.y)!,
+                //     d3.max(this.data, (innerD) => +innerD.y)!,
+                // ]);
                 this.yScale.range([50, 750]);
 
                 this.initializeVis(selectNodeFunc, hoverNodeFunc);
@@ -72,6 +76,7 @@ export class Plot {
             .attr('width', this.width + this.margin.left + this.margin.right)
             .attr('height', this.height + this.margin.top + this.margin.bottom);
 
+        console.log(this.data);
         const currData = this.data.filter((d) => d.dataset === this.quartetNum);
 
         this.svg.selectAll('circle')
@@ -215,6 +220,9 @@ function center() {
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(event, selectedNode) {
+    console.log("MEEEE")
+    // this.selectNodeFunc(`node_${d.id}`)
+    // selectNodeFunc(`node_${1}`)
     if (selectedId === selectedNode.id) {
         selectedId = undefined
         resetData()
@@ -410,9 +418,10 @@ function updateSimulation() {
 // last but not least, we call updateSimulation
 // to trigger the initial render
 //initZoom();
-updateSimulation()
+// updateSimulation()
 window.zoomIn = zoomIn
 window.zoomOut = zoomOut
 window.resetZoom = resetZoom
 window.center = center
+
 
