@@ -196,8 +196,6 @@ var simulation = d3
     .force('charge', d3.forceManyBody().strength(-240))
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-
-
 /*  
  * Drag functionality
  */ 
@@ -506,7 +504,6 @@ function updateSimulation() {
 
     // allows nodes to be dragged 
     simulation.alphaTarget(0.7).restart();
-
 }
 
 // we call updateSimulation to trigger the initial render without the graph will not load

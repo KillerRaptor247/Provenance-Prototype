@@ -127,6 +127,8 @@ div.tooltip {
 
 #headerDiv {
   text-align: center;
+  font-family: 'Roboto', sans-serif;
+  background: #264653;
   font-size: 100px;
   top: -60px;
 }
