@@ -19,7 +19,6 @@ import resetLinkColor from "../utils/resetLinkColor";
 export interface NodeState {
     selectedNode: string;
     hoveredNode: string;
-    // addNode: string;
 }
 
 /*
@@ -28,11 +27,10 @@ export interface NodeState {
 const initialState: NodeState = {
     selectedNode: 'none',
     hoveredNode: 'none',
-    //addNode: 'none'
 };
 
 // events the provenance tracking will record
-type EventTypes = 'Select Node' | 'Hover Node' /*| 'Add Node'*/;
+type EventTypes = 'Select Node' | 'Hover Node' | 'drag Node'/*| 'Add Node'*/;
 
 // initialize provenance with the first state
 let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
@@ -48,21 +46,11 @@ const nodeSelectAction = createAction<NodeState, any, EventTypes>(
         state.selectedNode = newSelected;
     },
 );
-
 const selectNodeUpdate = function (newSelected: string) {
     console.log("INSIDE SELECT NODE update");
     nodeSelectAction.setLabel(`${newSelected} Selected`).setEventType('Select Node');
     prov.apply(nodeSelectAction(newSelected));
 };
-
-/*
-const addNodeAction = createAction<NodeState, any, EventTypes > (
-    (state: NodeState, addNode: string) => {
-        state.addNode = addNode;
-    },
-);
-
-const addNodeUpdate = function(addNode: )*/
 
 /*
  * Function called when a node is hovered. Applies an action to provenance.
@@ -95,15 +83,12 @@ const visCallback = function (newNode: NodeID) {
     prov.goToNode(newNode);
 };
 
-// Set up observers for the three keys in state. These observers will get called either when
-// an applyAction function changes the associated keys value.
-
-// Also will be called when an internal graph change such as goBackNSteps, goBackOneStep or goToNode
-// change the keys value.
-
 /**
  * Observer for when the quartet state is changed. Calls changeQuartet in scatterplot to update vis.
- * 
+ * Set up observers for the three keys in state. These observers will get called either when
+ * an applyAction function changes the associated keys value.
+ * Also will be called when an internal graph change such as goBackNSteps, goBackOneStep or goToNode
+ * change the keys value.
  *
  * Observer for when the selected node state is changed.
  * Calls selectNode in scatterplot to update vis.
@@ -184,12 +169,13 @@ var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 var textGroup = svg.append('g').attr('class', 'texts')
 
-// simulation setup with all forces
+// generates the links and their force
 var linkForce = d3
     .forceLink()
     .id(function (link) { return link.id })
     .strength(function (link) { return link.strength });
 
+// generates the simulation connecting nodes and links
 var simulation = d3
     .forceSimulation()
     .force('link', linkForce)
@@ -205,6 +191,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
     simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = node.x
     node.fy = node.y
+
 
 }).on('drag', function (event, node) {
 

@@ -113,7 +113,7 @@
 }
 
 div.tooltip {
-    position: absolute;
+    position: relative;
     text-align: center;
     width: 60px;
     height: 28px;
@@ -127,8 +127,9 @@ div.tooltip {
 
 #headerDiv {
   text-align: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Times New Roman';
   background: #264653;
+  color: white;
   font-size: 100px;
   top: -60px;
 }
@@ -136,16 +137,14 @@ div.tooltip {
 #graph {
   max-height: 800px;
   display: flex;
-  float: left;
 }
 
 #provDiv {
-  float: right;
   max-width: 300px;
-  display: flex;
+  display:flex;
 }
 
 #parent {
     display: flex;
-    justify-content: center;
+    justify-content: right;
 }
