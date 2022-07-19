@@ -177,7 +177,7 @@ var svg = d3.select('#graph').append("svg")
     .attr("width", width)
     .attr("height", height)
     .call(zoom)
-    .append("g")
+    .append("g");
 
 // we use svg groups to logically group the elements together
 var linkGroup = svg.append('g').attr('class', 'links')
@@ -190,25 +190,13 @@ var linkForce = d3
     .id(function (link) { return link.id })
     .strength(function (link) { return link.strength });
 
-/*
-var simulation = d3.forceSimulation()
-    .nodes(nodes)
-    .force("charge", d3.forceManyBody()
-        .strength(-75)  // -1000
-        .distanceMax([250]))
-    .force("link", d3.forceLink()
-        .links(links)
-        .id(function (d) { return d.index })
-        .strength(function (d) { return 1 })
-        .distance(55))
-    .force("center", d3.forceCenter(width / 2, height /2 )); //  width / 2, height / 2
-   */
-
 var simulation = d3
     .forceSimulation()
     .force('link', linkForce)
     .force('charge', d3.forceManyBody().strength(-240))
     .force('center', d3.forceCenter(width / 2, height / 2));
+
+
 
 /*  
  * Drag functionality
@@ -237,7 +225,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
     node.fx = event.x
     node.fy = event.y
-})
+});
 
 // CHECK: this is used for the HTML 
 var div = d3.select("body").append("div")
@@ -322,15 +310,14 @@ function selectNodeStyle(selectedNodeStr) {
     if (selectedNode == undefined) {
         selectedId = undefined
         resetData()
-        //updateSimulation()
     }
     else if (selectedId != selectedNode.id) {
 
 
         selectedId = selectedNode.id;
         updateData(selectedNode)
+
         // removed updateSimulation to maintain the entire graph
-        //updateSimulation()
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
        nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
@@ -496,9 +483,10 @@ function updateGraph() {
     textElements = textEnter.merge(textElements)
 }
 
-
 function updateSimulation() {
+
     updateGraph()
+
     simulation.nodes(nodes).on('tick', () => {
         nodeElements
             .attr('cx', function (node) { return node.x })
@@ -512,11 +500,15 @@ function updateSimulation() {
             .attr('x2', function (link) { return link.target.x })
             .attr('y2', function (link) { return link.target.y })
     })
-    simulation.force('link').links(links)
-    simulation.alphaTarget(0.7).restart()
+
+    // creates links for graph
+    simulation.force('link').links(links);
+
+    // allows nodes to be dragged 
+    simulation.alphaTarget(0.7).restart();
+
 }
 
-//initZoom();
 // we call updateSimulation to trigger the initial render without the graph will not load
 updateSimulation()
 window.zoomIn       = zoomIn

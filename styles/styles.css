@@ -125,6 +125,12 @@ div.tooltip {
     pointer-events: none;
 }
 
+#headerDiv {
+  text-align: center;
+  font-size: 100px;
+  top: -60px;
+}
+
 #graph {
   max-height: 800px;
   display: flex;
