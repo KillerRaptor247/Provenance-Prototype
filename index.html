@@ -17,11 +17,29 @@
     </head>
 <body>
 
-    <div id="headerDiv">Provenance Tracking Prototype</div>
+  <div id="headerDiv">Provenance Tracking Prototype</div>
 
-    <div id="parent">
-      <svg width="0" height="0"><div id="graph"></div></svg>
-      <div id="provDiv"></div>
+  <div class="topnav">
+    <a class="button" id="addNode">Add Node</a>
+    <a class="button" id="removeNode">Remove Node</a>
+    <div class="search-container">
+      <form action="/action_page.php">
+        <input type="text" placeholder="Search.." name="search">
+        <button type="submit"><i class="fa fa-search"></i></button>
+      </form>
     </div>
+  </div>
+  
+  <div class="sidenav">
+    <a href="#about"> About</a>
+    <a href="#services"> Services</a>
+    <a href="#contact"> Contact</a>
+  </div>
+
+  <div id="parent">
+    <svg width="0" height="0"><div id="graph"></div></svg>
+    <div id="provDiv"></div>
+  </div>
+
 </body>
 </html>

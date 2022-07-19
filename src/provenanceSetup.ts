@@ -19,9 +19,8 @@ import resetLinkColor from "../utils/resetLinkColor";
 export interface NodeState {
     selectedNode: string;
     hoveredNode: string;
-
     draggedNode: string;
-    // addNode: string;
+    //addNode: string;
 }
 
 /*
@@ -35,9 +34,7 @@ const initialState: NodeState = {
 };
 
 // events the provenance tracking will record
-type EventTypes = 'Select Node' | 'Hover Node' | 'Drag Node'/*| 'Add Node'*/;
-
-
+type EventTypes = 'Select Node' | 'Hover Node' | 'Drag Node' /*| 'Add Node'*/;
 
 // initialize provenance with the first state
 let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
@@ -59,16 +56,19 @@ const selectNodeUpdate = function (newSelected: string) {
     prov.apply(nodeSelectAction(newSelected));
 };
 
+/*
+ * Drag node function
+ */ 
 const nodeDragAction = createAction<NodeState, any, EventTypes>(
     (state: NodeState, newDragged: string) => {
         state.draggedNode = newDragged;
     },
 )
-
 const dragNodeUpdate = function (newDragged: string) {
     nodeDragAction.setLabel('${newDragged} Moved').setEventType('Drag Node');
     prov.apply(nodeDragAction(newDragged));
 }
+
 /*
  * Function called when a node is hovered. Applies an action to provenance.
  */
@@ -78,10 +78,6 @@ const hoverAction = createAction<NodeState, any, EventTypes>(
         return state;
     },
 );
-
-/*
- * Function called when a node is hovered off of
- */
 const hoverNodeUpdate = function (newHover: string) {
     hoverAction
         .setLabel(newHover === '' ? 'Hover Removed' : `${newHover} Hovered`)
@@ -90,9 +86,24 @@ const hoverNodeUpdate = function (newHover: string) {
     prov.apply(hoverAction(newHover));
 };
 
+/*
+ * Add a node function
+ *
+const addNodeAction = createAction<NodeState, any, EventTypes>(
+    (state: NodeState, newNode: string) => {
+        state.addNode = newNode;
+        return state;
+    },
+);
+const newNodeUpdate = function (newNode: string) {
+    addNodeAction.setLabel('${newNode} Added').setEventType('Add Node');
+    prov.apply(addNodeAction(newNode));
+}*/
+
+
 // Create our scatterplot class which handles the actual vis. Pass it our three action functions
 // so it can use them when appropriate.
-const graph = new Plot(selectNodeUpdate, hoverNodeUpdate);
+var graph = new Plot(selectNodeUpdate, dragNodeUpdate);
 
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
 // For our purposes, were simply going to jump to the selected node.
@@ -100,7 +111,7 @@ const visCallback = function (newNode: NodeID) {
     prov.goToNode(newNode);
 };
 
-/**
+/*
  * Observer for when the quartet state is changed. Calls changeQuartet in scatterplot to update vis.
  * Set up observers for the three keys in state. These observers will get called either when
  * an applyAction function changes the associated keys value.
@@ -168,17 +179,37 @@ document.onkeydown = function (e) {
     }
 };
 
+/***************************************************** BUTTONS *****************************************************************/
+
+const addNodeButton = document.getElementById('addNode');
+
+addNodeButton?.addEventListener('click', function handleClick(event) {
+    console.log('adding a node button clicked');
+    console.log(event);
+    console.log(event.target);
+});
+
+
+const removeNodeButton = document.getElementById('removeNode');
+
+removeNodeButton?.addEventListener('click', function handleClick(event) {
+    console.log('removing a node button clicked');
+    console.log(event);
+    console.log(event.target);
+});
+
 /*****************************************************NODE BASED GRAPH*****************************************************************/
-let nodes = [...baseNodes]                    // list of node data
-let links = [...baseLinks]                    // list of link data
-let zoom = d3.zoom().on("zoom", zoomy)       // zoom functionality
+let nodes = [...baseNodes]                              // list of node data
+let links = [...baseLinks]                              // list of link data
+let zoom = d3.zoom().on("zoom", zoomy)                  // zoom functionality
 //let searchNodes   = []                                // array for search nodes
 //let searchLinks   = []                                // array for search links
-var width = window.innerWidth                 // window width
-var height = window.innerHeight                // window height
+var width = window.innerWidth                           // window width
+var height = window.innerHeight                         // window height
 var linkElements, nodeElements, textElements            // graph elements required
 var selectedId                                          // this references to select/deselect after clicking the same element twice
 var draggedId                                           // id to keep track of the current dragged node
+
 /*
  * Graph Generation
  */
@@ -215,7 +246,6 @@ var dragDrop = d3.drag().on('start', function (event, node) {
     simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = node.x
     node.fy = node.y
-
 
 }).on('drag', function (event, node) {
 
@@ -254,19 +284,16 @@ function zoomIn() {
         .transition()
         .call(zoom.scaleBy, 2);
 }
-
 function zoomOut() {
     svg
         .transition()
         .call(zoom.scaleBy, 0.5);
 }
-
 function resetZoom() {
     svg
         .transition()
         .call(zoom.scaleTo, 1);
 }
-
 function center() {
     svg
         .transition()

@@ -121,44 +121,6 @@ var svg = d3.select('#graph').append("svg")
 // we use svg groups to logically group the elements together
 var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
-var textGroup = svg.append('g').attr('class', 'texts')
-
-/*
- * Graph Generation
- */
-
-/*
-// link forces
-var linkForce = d3
-    .forceLink()
-    .id(function (link) { return link.id })
-    .strength(function (link) { return link.strength })
-*/
-/*
-// simulation 
-var simulation = d3
-    .forceSimulation()
-    .force('link', linkForce)
-    .force('charge', d3.forceManyBody().strength(-240))
-    .force('center', d3.forceCenter(width / 2, height/ 2));
-    */
-
-/*
-// drag functionality
-var dragDrop = d3.drag().on('start', function (event, node) {
-    node.fx = node.x
-    node.fy = node.y
-}).on('drag', function (event, node) {
-    simulation.alphaTarget(0.7).restart()
-    node.fx = event.x
-    node.fy = event.y
-}).on('end', function (event, node) {
-    if (!event.active) {
-        simulation.alphaTarget(0)
-    }
-    node.fx = event.x
-    node.fy = event.y
-})*/
 
 // CHECK: I believe this is form HTML file
 var div = d3.select("body").append("div")
