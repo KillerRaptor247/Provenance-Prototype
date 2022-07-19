@@ -9,7 +9,6 @@ import resetNodeColor from "../utils/resetNodeColor";
 import resetTextColor from "../utils/resetTextColor";
 import resetLinkColor from "../utils/resetLinkColor";
 
-
 export class Plot {
     margin: any;
     width: number;
@@ -21,27 +20,26 @@ export class Plot {
     yScale: d3.ScaleLinear<number, number>;
     selectNodeFunc: (s: string) => void;
 
-
     constructor(
         selectNodeFunc: (s: string) => void,
-        hoverNodeFunc: (s: string) => void,
+        hoverNodeFunc: (s: string)  => void,
     ) {
-        this.margin = {};
-        this.width  = 0;
-        this.height = 0;
-        this.data   = [];
-        this.svg    = d3.select('#graph').append('svg');
-        this.xScale = d3.scaleLinear();
-        this.yScale = d3.scaleLinear();
+        this.margin         = {};
+        this.width          = 0;
+        this.height         = 0;
+        this.data           = [];
+        this.svg            = d3.select('#graph').append('svg');
+        this.xScale         = d3.scaleLinear();
+        this.yScale         = d3.scaleLinear();
         this.selectNodeFunc = selectNodeFunc;
 
         d3.json('https://demo6704570.mockable.io/ptracking').
             then((d) => {
-                this.data = d;
+                this.data   = d;
                 this.margin = {
                     top: 20, right: 20, bottom: 20, left: 20,
                 };
-                this.width = 800 - this.margin.left - this.margin.right;
+                this.width  = 800 - this.margin.left - this.margin.right;
                 this.height = 800 - this.margin.top - this.margin.bottom;
                 this.xScale.range([50, 750]);
                 this.yScale.range([50, 750]);
@@ -62,15 +60,14 @@ export class Plot {
             .enter()
             .append('circle')
             .attr('class', 'normalNode')
-            .attr('id', (d) => `node_${d.id}`)
-            .attr('cx', (d) => this.xScale(+d.x))
-            .attr('cy', (d) => this.height - this.yScale(+d.y))
+            .attr('id', (d)         => `node_${d.id}`)
+            .attr('cx', (d)         => this.xScale(+d.x))
+            .attr('cy', (d)         => this.height - this.yScale(+d.y))
             .attr('r', 7)
-            .on('click', (d) => selectNodeFunc(`node_${d.id}`))
-            .on('mouseover', (d) => hoverNodeFunc(`node_${d.id}`))
-            .on('mouseout', (d) => hoverNodeFunc(''));
+            .on('click', (d)        => selectNodeFunc(`node_${d.id}`))
+            .on('mouseover', (d)    => hoverNodeFunc(`node_${d.id}`))
+            .on('mouseout', (d)     => hoverNodeFunc(''));
     }
-
 
     /*
      * Ensures the previously selected node is no longer selected
@@ -104,46 +101,50 @@ export class Plot {
     }
 }
 
+let nodes       = [...baseNodes]                    // list of node data
+let links       = [...baseLinks]                    // list of link data
+let zoom        = d3.zoom().on("zoom", zoomy)       // zoom functionality
+//let searchNodes = []                              // array for search nodes
+//let searchLinks = []                              // array for search links
+var width       = window.innerWidth                 // window width
+var height      = window.innerHeight                // window height
+var linkElements, nodeElements, textElements        // graph elements required
+var selectedId                                      // use this reference to select/deselect after clicking the same element twice
 
-let nodes = [...baseNodes]
-let links = [...baseLinks]
-let zoom = d3.zoom().on("zoom", zoomy)
-
-var width = window.innerWidth
-var height = window.innerHeight
-let searchNodes = []
-let searchLinks = []
-
+// scalable vector graph
 var svg = d3.select('#graph').append("svg")
-    .attr("width", width)
+    .attr("width", width)                           
     .attr("height", height)
     .call(zoom)
     .append("g")
-
-var linkElements,
-    nodeElements,
-    textElements
 
 // we use svg groups to logically group the elements together
 var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 var textGroup = svg.append('g').attr('class', 'texts')
 
-// we use this reference to select/deselect after clicking the same element twice
-var selectedId
+/*
+ * Graph Generation
+ */
 
-// simulation setup with all forces
+/*
+// link forces
 var linkForce = d3
     .forceLink()
     .id(function (link) { return link.id })
     .strength(function (link) { return link.strength })
-
+*/
+/*
+// simulation 
 var simulation = d3
     .forceSimulation()
     .force('link', linkForce)
     .force('charge', d3.forceManyBody().strength(-240))
-    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('center', d3.forceCenter(width / 2, height/ 2));
+    */
 
+/*
+// drag functionality
 var dragDrop = d3.drag().on('start', function (event, node) {
     node.fx = node.x
     node.fy = node.y
@@ -157,12 +158,16 @@ var dragDrop = d3.drag().on('start', function (event, node) {
     }
     node.fx = event.x
     node.fy = event.y
-})
+})*/
 
+// CHECK: I believe this is form HTML file
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+/* 
+ * zoom functionality
+ */ 
 function zoomy(event) {
     svg.attr("transform", event.transform)
 }
@@ -191,22 +196,27 @@ function center() {
         .call(zoom.translateTo, 0.5 * width, 0.5 * height);
 }
 
-// select node is called on every click
-// we either update the data according to the selection
-// or reset the data if the same node is clicked twice
+
+// NEED: select node is called on every click
 function selectNode(event, selectedNode) {
-    console.log("MEEEE")
-    // this.selectNodeFunc(`node_${d.id}`)
-    // selectNodeFunc(`node_${1}`)
+    console.log("Node was selected")
+
+    //  reset the data if the same node is clicked twice
     if (selectedId === selectedNode.id) {
         selectedId = undefined
         resetData()
-        updateSimulation()
-    } else {
+        //updateSimulation()
+    }
+
+    // update, a new node has been selected
+    else {
         selectedId = selectedNode.id
         updateData(selectedNode)
-        updateSimulation()
-        var neighbors = getNeighbors(selectedNode, baseLinks)
+        //updateSimulation()
+
+        // removed update graph from here
+
+        var neighbors   = getNeighbors(selectedNode, baseLinks)
 
         // we modify the styles to highlight selected nodes
         nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
@@ -215,10 +225,12 @@ function selectNode(event, selectedNode) {
     }
 }
 
+
+// NEED
 export default function selectNodeExplicit(selectedNode) {
     selectedId = selectedNode.id
     updateData(selectedNode)
-    updateSimulation()
+    //updateSimulation()
     var neighbors = getNeighbors(selectedNode, baseLinks)
 
     // we modify the styles to highlight selected nodes
@@ -227,6 +239,8 @@ export default function selectNodeExplicit(selectedNode) {
     linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
 }
 
+// These functions are not needed to run the simulation
+/*
 export function selectNodesExplicit(selectedNode) {
     selectedId = selectedNode.id
 
@@ -261,10 +275,9 @@ export function resetNodeExplicit() {
     linkElements.attr('stroke', '#E5E5E5')
     resetData()
     updateSimulation()
-}
+}*/
 
-// this helper simple adds all nodes and links
-// that are missing, to recreate the initial state
+// NEED: this helper simple adds all nodes and links that are missing, to recreate the initial state
 function resetData() {
     var nodeIds = nodes.map(function (node) { return node.id })
     var neighbors = {}
@@ -279,16 +292,26 @@ function resetData() {
     })
 
     links = baseLinks
+
+    /*
     for (let i = 0; i < searchNodes.length; i++) {
         searchNodes.pop();
-    }
+    }*/
 }
 
 
+/* 
+ * Update graph 
+ * Update data 
+ * Update simulation
+ */
 
+// NEED 
 // diffing and mutating the data
 function updateData(selectedNode) {
+    // collect neighbors
     var neighbors = getNeighbors(selectedNode, baseLinks)
+
     var newNodes = baseNodes.filter(function (node) {
         return neighbors.indexOf(node.id) > -1 || node.level === 1
     })
@@ -305,7 +328,7 @@ function updateData(selectedNode) {
         return link.target === selectedNode.id || link.source === selectedNode.id
     })
 }
-
+/*
 function updateGraph() {
     // links
     linkElements = linkGroup.selectAll('line')
@@ -333,7 +356,7 @@ function updateGraph() {
         .append('circle')
         .attr('r', 10)
         .attr('fill', function (node) { return node.level === 1 ? 'red' : 'gray' })
-        .call(dragDrop)
+        //.call(dragDrop)
         // we link the selectNode method here
         // to update the graph on every click
         .on('click', selectNode)
@@ -387,16 +410,15 @@ function updateSimulation() {
             .attr('y2', function (link) { return link.target.y })
     })
 
-    simulation.force('link').links(links)
-    simulation.alphaTarget(0.7).restart()
+    //simulation.force('link').links(links)
+    //simulation.alphaTarget(0.7).restart()
 }
-// last but not least, we call updateSimulation
-// to trigger the initial render
-//initZoom();
-// updateSimulation()
-window.zoomIn = zoomIn
-window.zoomOut = zoomOut
-window.resetZoom = resetZoom
-window.center = center
+*/
+
+// last but not least, we call updateSimulation to trigger the initial render
+window.zoomIn       = zoomIn
+window.zoomOut      = zoomOut
+window.resetZoom    = resetZoom
+window.center       = center
 
 

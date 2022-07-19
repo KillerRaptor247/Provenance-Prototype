@@ -3,8 +3,6 @@ import '../styles/styles.css'
 import { ProvVisCreator } from '@visdesignlab/trrack-vis';
 import Graph, { Plot } from './graph';
 import * as d3 from "d3";
-
-// import * as d3 from 'd3'
 import baseNodes from '.././data/nodes'
 import baseLinks from '.././data/links'
 import getLinkColor from "../utils/getLinkColor"
@@ -15,7 +13,7 @@ import resetNodeColor from "../utils/resetNodeColor";
 import resetTextColor from "../utils/resetTextColor";
 import resetLinkColor from "../utils/resetLinkColor";
 
-/**
+/*
  * interface representing the state of the application
  */
 export interface NodeState {
@@ -24,7 +22,7 @@ export interface NodeState {
     // addNode: string;
 }
 
-/**
+/*
  * Initial state
  */
 const initialState: NodeState = {
@@ -33,6 +31,7 @@ const initialState: NodeState = {
     //addNode: 'none'
 };
 
+// events the provenance tracking will record
 type EventTypes = 'Select Node' | 'Hover Node' /*| 'Add Node'*/;
 
 // initialize provenance with the first state
@@ -40,10 +39,9 @@ let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
     loadFromUrl: false,
 });
 
-// Set up apply action functions for each of the 2 actions that affect state
-
-/**
+/*
  * Function called when a node is selected. Applies an action to provenance.
+ * Set up apply action functions for each of the 2 actions that affect state
  */
 const nodeSelectAction = createAction<NodeState, any, EventTypes>(
     (state: NodeState, newSelected: string) => {
@@ -52,7 +50,7 @@ const nodeSelectAction = createAction<NodeState, any, EventTypes>(
 );
 
 const selectNodeUpdate = function (newSelected: string) {
-    console.log("INSIDE SELECT NODE");
+    console.log("INSIDE SELECT NODE update");
     nodeSelectAction.setLabel(`${newSelected} Selected`).setEventType('Select Node');
     prov.apply(nodeSelectAction(newSelected));
 };
@@ -66,10 +64,9 @@ const addNodeAction = createAction<NodeState, any, EventTypes > (
 
 const addNodeUpdate = function(addNode: )*/
 
-/**
+/*
  * Function called when a node is hovered. Applies an action to provenance.
  */
-
 const hoverAction = createAction<NodeState, any, EventTypes>(
     (state: NodeState, newHover: string) => {
         state.hoveredNode = newHover;
@@ -77,6 +74,9 @@ const hoverAction = createAction<NodeState, any, EventTypes>(
     },
 );
 
+/*
+ * Function called when a node is hovered off of
+ */
 const hoverNodeUpdate = function (newHover: string) {
     hoverAction
         .setLabel(newHover === '' ? 'Hover Removed' : `${newHover} Hovered`)
@@ -87,7 +87,6 @@ const hoverNodeUpdate = function (newHover: string) {
 
 // Create our scatterplot class which handles the actual vis. Pass it our three action functions
 // so it can use them when appropriate.
-
 const graph = new Plot(selectNodeUpdate, hoverNodeUpdate);
 
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
@@ -105,7 +104,7 @@ const visCallback = function (newNode: NodeID) {
 /**
  * Observer for when the quartet state is changed. Calls changeQuartet in scatterplot to update vis.
  * 
-/**
+ *
  * Observer for when the selected node state is changed.
  * Calls selectNode in scatterplot to update vis.
  */
@@ -160,68 +159,94 @@ document.onkeydown = function (e) {
     }
 };
 
+/*****************************************************NODE BASED GRAPH*****************************************************************/
+let nodes           = [...baseNodes]                    // list of node data
+let links           = [...baseLinks]                    // list of link data
+let zoom            = d3.zoom().on("zoom", zoomy)       // zoom functionality
+//let searchNodes   = []                                // array for search nodes
+//let searchLinks   = []                                // array for search links
+var width           = window.innerWidth                 // window width
+var height          = window.innerHeight                // window height
+var linkElements, nodeElements, textElements            // graph elements required
+var selectedId                                          // this references to select/deselect after clicking the same element twice
 
-/// CODE
-
-let nodes = [...baseNodes]
-let links = [...baseLinks]
-let zoom = d3.zoom().on("zoom", zoomy)
-
-var width = window.innerWidth
-var height = window.innerHeight
-let searchNodes = []
-let searchLinks = []
-
+/*
+ * Graph Generation
+ */
 var svg = d3.select('#graph').append("svg")
     .attr("width", width)
     .attr("height", height)
     .call(zoom)
     .append("g")
 
-var linkElements,
-    nodeElements,
-    textElements
-
 // we use svg groups to logically group the elements together
 var linkGroup = svg.append('g').attr('class', 'links')
 var nodeGroup = svg.append('g').attr('class', 'nodes')
 var textGroup = svg.append('g').attr('class', 'texts')
 
-// we use this reference to select/deselect
-// after clicking the same element twice
-var selectedId
-
 // simulation setup with all forces
 var linkForce = d3
     .forceLink()
     .id(function (link) { return link.id })
-    .strength(function (link) { return link.strength })
+    .strength(function (link) { return link.strength });
+
+/*
+var simulation = d3.forceSimulation()
+    .nodes(nodes)
+    .force("charge", d3.forceManyBody()
+        .strength(-75)  // -1000
+        .distanceMax([250]))
+    .force("link", d3.forceLink()
+        .links(links)
+        .id(function (d) { return d.index })
+        .strength(function (d) { return 1 })
+        .distance(55))
+    .force("center", d3.forceCenter(width / 2, height /2 )); //  width / 2, height / 2
+   */
 
 var simulation = d3
     .forceSimulation()
     .force('link', linkForce)
     .force('charge', d3.forceManyBody().strength(-240))
-    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('center', d3.forceCenter(width / 2, height / 2));
 
+/*  
+ * Drag functionality
+ */ 
 var dragDrop = d3.drag().on('start', function (event, node) {
+
+    // this line of code ensures the graph does not move at all after a node has been moved
+    simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = node.x
     node.fy = node.y
+
 }).on('drag', function (event, node) {
-    simulation.alphaTarget(0.7).restart()
+
+    // this line of code ensures the graph does not move at all after a node has been moved
+    simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = event.x
     node.fy = event.y
+
 }).on('end', function (event, node) {
+
     if (!event.active) {
-        simulation.alphaTarget(0)
+
+        // this line of code ensures the graph does not move at all after a node has been moved
+        simulation.force("link", null).force("charge", null).force("center", null);
     }
+
     node.fx = event.x
     node.fy = event.y
 })
 
+// CHECK: this is used for the HTML 
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+/*
+ * Zoom functionality
+ */ 
 function zoomy(event) {
     svg.attr("transform", event.transform)
 }
@@ -254,19 +279,18 @@ function center() {
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(event, selectedNode) {
-    console.log("MEEEE")
-    // this.selectNodeFunc(`node_${d.id}`)
+    console.log("User selected a node.")
     console.log(`node_${selectedNode.id}`);
 
     if (selectedId === selectedNode.id) {
         selectedId = undefined
         resetData()
         updateSimulation()
-    } else {
+    }
+    else {
         selectNodeUpdate(`node_${selectedNode.id}`)
         selectedId = selectedNode.id
         updateData(selectedNode)
-        updateSimulation()
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
         // we modify the styles to highlight selected nodes
@@ -277,38 +301,45 @@ function selectNode(event, selectedNode) {
 }
 
 function getNodeById(nodeId) {
+    console.log("Collecting node by ID.")
+
     var node = baseNodes.filter(function (node) {
         return node.id == nodeId
     })
     return node[0];
 }
 
-function selectNodeStyle(selectedNodeStr) {
 
-    console.log("selectNode");
+function selectNodeStyle(selectedNodeStr) {
+    console.log("select node by style");
     console.log(selectedNodeStr);
-    let selectedNodeId = selectedNodeStr.split("_")[1];
-    let selectedNode = getNodeById(selectedNodeId);
+
+    let selectedNodeId  = selectedNodeStr.split("_")[1];
+    let selectedNode    = getNodeById(selectedNodeId);
+
     console.log(selectedNode);
 
     if (selectedNode == undefined) {
         selectedId = undefined
         resetData()
-        updateSimulation()
-    } else if (selectedId != selectedNode.id) {
+        //updateSimulation()
+    }
+    else if (selectedId != selectedNode.id) {
+
+
         selectedId = selectedNode.id;
-
         updateData(selectedNode)
-        updateSimulation()
-
+        // removed updateSimulation to maintain the entire graph
+        //updateSimulation()
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
-        nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
-        textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
-        linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
+       nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
+       textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
+       linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
     }
 }
 
+/*
 export default function selectNodeExplicit(selectedNode) {
     selectedId = selectedNode.id
     updateData(selectedNode)
@@ -355,11 +386,12 @@ export function resetNodeExplicit() {
     linkElements.attr('stroke', '#E5E5E5')
     resetData()
     updateSimulation()
-}
+}*/
 
 // this helper simple adds all nodes and links
 // that are missing, to recreate the initial state
 function resetData() {
+    console.log("reset Data.")
     var nodeIds = nodes.map(function (node) { return node.id })
     var neighbors = {}
 
@@ -373,11 +405,11 @@ function resetData() {
     })
 
     links = baseLinks
+    /*
     for (let i = 0; i < searchNodes.length; i++) {
-        // searchNodes.pop();
-    }
+        searchNodes.pop();
+    }*/
 }
-
 
 
 // diffing and mutating the data
@@ -464,9 +496,9 @@ function updateGraph() {
     textElements = textEnter.merge(textElements)
 }
 
+
 function updateSimulation() {
     updateGraph()
-
     simulation.nodes(nodes).on('tick', () => {
         nodeElements
             .attr('cx', function (node) { return node.x })
@@ -480,15 +512,14 @@ function updateSimulation() {
             .attr('x2', function (link) { return link.target.x })
             .attr('y2', function (link) { return link.target.y })
     })
-
     simulation.force('link').links(links)
     simulation.alphaTarget(0.7).restart()
 }
-// last but not least, we call updateSimulation
-// to trigger the initial render
+
 //initZoom();
+// we call updateSimulation to trigger the initial render without the graph will not load
 updateSimulation()
-window.zoomIn = zoomIn
-window.zoomOut = zoomOut
-window.resetZoom = resetZoom
-window.center = center
+window.zoomIn       = zoomIn
+window.zoomOut      = zoomOut
+window.resetZoom    = resetZoom
+window.center       = center
