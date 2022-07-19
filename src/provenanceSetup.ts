@@ -19,6 +19,9 @@ import resetLinkColor from "../utils/resetLinkColor";
 export interface NodeState {
     selectedNode: string;
     hoveredNode: string;
+
+    draggedNode: string;
+    // addNode: string;
 }
 
 /*
@@ -27,10 +30,14 @@ export interface NodeState {
 const initialState: NodeState = {
     selectedNode: 'none',
     hoveredNode: 'none',
+    draggedNode: 'none',
+    //addNode: 'none'
 };
 
 // events the provenance tracking will record
-type EventTypes = 'Select Node' | 'Hover Node' | 'drag Node'/*| 'Add Node'*/;
+type EventTypes = 'Select Node' | 'Hover Node' | 'Drag Node'/*| 'Add Node'*/;
+
+
 
 // initialize provenance with the first state
 let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
@@ -52,6 +59,16 @@ const selectNodeUpdate = function (newSelected: string) {
     prov.apply(nodeSelectAction(newSelected));
 };
 
+const nodeDragAction = createAction<NodeState, any, EventTypes>(
+    (state: NodeState, newDragged: string) => {
+        state.draggedNode = newDragged;
+    },
+)
+
+const dragNodeUpdate = function (newDragged: string) {
+    nodeDragAction.setLabel('${newDragged} Moved').setEventType('Drag Node');
+    prov.apply(nodeDragAction(newDragged));
+}
 /*
  * Function called when a node is hovered. Applies an action to provenance.
  */
@@ -104,6 +121,13 @@ prov.addObserver(
     },
 );
 
+prov.addObserver(
+    (state) => state.draggedNode,
+    () => {
+        dragNodeStyle(prov.getState(prov.current).draggedNode)
+    },
+);
+
 /**
  * Observer for when the hovered node state is changed. Calls hoverNode in scatterplot to update vis.
  */
@@ -145,16 +169,16 @@ document.onkeydown = function (e) {
 };
 
 /*****************************************************NODE BASED GRAPH*****************************************************************/
-let nodes           = [...baseNodes]                    // list of node data
-let links           = [...baseLinks]                    // list of link data
-let zoom            = d3.zoom().on("zoom", zoomy)       // zoom functionality
+let nodes = [...baseNodes]                    // list of node data
+let links = [...baseLinks]                    // list of link data
+let zoom = d3.zoom().on("zoom", zoomy)       // zoom functionality
 //let searchNodes   = []                                // array for search nodes
 //let searchLinks   = []                                // array for search links
-var width           = window.innerWidth                 // window width
-var height          = window.innerHeight                // window height
+var width = window.innerWidth                 // window width
+var height = window.innerHeight                // window height
 var linkElements, nodeElements, textElements            // graph elements required
 var selectedId                                          // this references to select/deselect after clicking the same element twice
-
+var draggedId                                           // id to keep track of the current dragged node
 /*
  * Graph Generation
  */
@@ -184,7 +208,7 @@ var simulation = d3
 
 /*  
  * Drag functionality
- */ 
+ */
 var dragDrop = d3.drag().on('start', function (event, node) {
 
     // this line of code ensures the graph does not move at all after a node has been moved
@@ -210,6 +234,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
     node.fx = event.x
     node.fy = event.y
+
 });
 
 // CHECK: this is used for the HTML 
@@ -219,7 +244,7 @@ var div = d3.select("body").append("div")
 
 /*
  * Zoom functionality
- */ 
+ */
 function zoomy(event) {
     svg.attr("transform", event.transform)
 }
@@ -246,6 +271,13 @@ function center() {
     svg
         .transition()
         .call(zoom.translateTo, 0.5 * width, 0.5 * height);
+}
+
+// drag node should be called on every drag
+// we should update the data while it is being dragged
+// and update the provenance when the drag is finished
+function dragNode(event, draggedNode) {
+
 }
 
 // select node is called on every click
@@ -287,8 +319,8 @@ function selectNodeStyle(selectedNodeStr) {
     console.log("select node by style");
     console.log(selectedNodeStr);
 
-    let selectedNodeId  = selectedNodeStr.split("_")[1];
-    let selectedNode    = getNodeById(selectedNodeId);
+    let selectedNodeId = selectedNodeStr.split("_")[1];
+    let selectedNode = getNodeById(selectedNodeId);
 
     console.log(selectedNode);
 
@@ -305,11 +337,40 @@ function selectNodeStyle(selectedNodeStr) {
         // removed updateSimulation to maintain the entire graph
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
-       nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
-       textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
-       linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
+        nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
+        textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
+        linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
     }
 }
+
+function dragNodeStyle(draggedNodeStr) {
+    console.log("select node by style");
+    console.log(draggedNodeStr);
+
+    let draggedNodeId = draggedNodeStr.split("_")[1];
+    let draggedNode = getNodeById(draggedNodeId);
+
+    console.log(draggedNode);
+
+    if (draggedNode == undefined) {
+        selectedId = undefined
+        resetData()
+    }
+    else if (draggedId != draggedNode.id) {
+
+
+        draggedId = draggedNode.id;
+        updateData(draggedNode)
+
+        // removed updateSimulation to maintain the entire graph
+        var neighbors = getNeighbors(draggedNode, baseLinks)
+
+        nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, draggedNode) })
+        textElements.attr('fill', function (node) { return getTextColor(node, neighbors, draggedNode) })
+        linkElements.attr('stroke', function (link) { return getLinkColor(draggedNode, link) })
+    }
+}
+
 
 /*
 export default function selectNodeExplicit(selectedNode) {
@@ -495,7 +556,7 @@ function updateSimulation() {
 
 // we call updateSimulation to trigger the initial render without the graph will not load
 updateSimulation()
-window.zoomIn       = zoomIn
-window.zoomOut      = zoomOut
-window.resetZoom    = resetZoom
-window.center       = center
+window.zoomIn = zoomIn
+window.zoomOut = zoomOut
+window.resetZoom = resetZoom
+window.center = center
