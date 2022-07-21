@@ -228,7 +228,7 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
             // this generates the ndoe
             updateSimulation();
 
-            newNodeUpdate(`node_${newNode.id}`);
+            newNodeUpdate(`${newNode.label}`);
 
             // parse the users response
             var parser = response.split(" ");
@@ -258,8 +258,6 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
 let nodes = [...baseNodes]                              // list of node data
 let links = [...baseLinks]                              // list of link data
 let zoom = d3.zoom().on("zoom", zoomy)                  // zoom functionality
-//let searchNodes   = []                                // array for search nodes
-//let searchLinks   = []                                // array for search links
 var width = window.innerWidth                           // window width
 var height = window.innerHeight                         // window height
 var linkElements, nodeElements, textElements            // graph elements required
