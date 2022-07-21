@@ -297,7 +297,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
     console.log("Drag on start");
     // this line of code ensures the graph does not move at all after a node has been moved
-    simulation.force("link", null).force("charge", null).force("center", null);
+    //simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = node.x
     node.fy = node.y
 
@@ -305,7 +305,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
     console.log("Drag on drag");
     // this line of code ensures the graph does not move at all after a node has been moved
-    simulation.force("link", null).force("charge", null).force("center", null);
+    //simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = event.x
     node.fy = event.y
 
@@ -315,7 +315,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
     if (!event.active) {
 
         // this line of code ensures the graph does not move at all after a node has been moved
-        simulation.force("link", null).force("charge", null).force("center", null);
+        //simulation.force("link", null).force("charge", null).force("center", null);
     }
 
     node.fx = event.x
@@ -369,6 +369,8 @@ function selectNode(event, selectedNode) {
     if (selectedId === selectedNode.id) {
         console.log("User is deselecting a node");
         selectedId = undefined
+
+        // when user deselects a node and the data is reset but the node drifts off
         resetData()
         updateSimulation()
     }
@@ -394,7 +396,7 @@ function getNodeById(nodeId) {
         return node.id == nodeId;
     })
 
-    console.log("Now here " + JSON.stringify(node));
+    console.log("Now here " + JSON.stringify(node) + nodeId + node[0]);
 
     // This may need to be changed this sometimes returns undefined 
     return node[0];
@@ -463,8 +465,7 @@ function dragNodeStyle(draggedNodeStr) {
     else if (draggedId != draggedNode.id) {
 
         draggedId = draggedNode.id;
-        //updateData(draggedNode)
-
+ 
         // removed updateSimulation to maintain the entire graph
         var neighbors = getNeighbors(draggedNode, baseLinks)
 
@@ -475,106 +476,25 @@ function dragNodeStyle(draggedNodeStr) {
 }
 
 
-/*
-export default function selectNodeExplicit(selectedNode) {
-    selectedId = selectedNode.id
-    updateData(selectedNode)
-    updateSimulation()
-    var neighbors = getNeighbors(selectedNode, baseLinks)
-
-    // we modify the styles to highlight selected nodes
-    nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
-    textElements.attr('fill', function (node) { return getTextColor(node, neighbors, selectedNode) })
-    linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
-}
-
-export function selectNodesExplicit(selectedNode) {
-    selectedId = selectedNode.id
-
-    var val;
-    for (let i = 0; i < searchNodes.length; i++) {
-        val = searchNodes.values().next().value
-    }
-
-    if (!(typeof val === undefined)) {
-        searchNodes.push(selectedNode)
-    }
-    var diff = {
-        removed: nodes.filter(function (node) { return searchNodes.indexOf(node) === -1 }),
-        added: searchNodes.filter(function (node) { return nodes.indexOf(node) === -1 })
-    }
-
-    diff.removed.forEach(function (node) { nodes.splice(nodes.indexOf(node), 1) })
-    diff.added.forEach(function (node) { nodes.push(node) })
-}
-
-export function selectLinksExplicit() {
-    var newLinks = baseLinks.filter(function (link) {
-        return (searchNodes.includes(link.source) && searchNodes.includes(link.target)) || searchNodes.length === 0
-    })
-    links = newLinks
-    updateSimulation()
-}
-
-export function resetNodeExplicit() {
-    nodeElements.attr('fill', 'gray')
-    textElements.attr('fill', 'black')
-    linkElements.attr('stroke', '#E5E5E5')
-    resetData()
-    updateSimulation()
-}*/
-
 // this helper simple adds all nodes and links
 // that are missing, to recreate the initial state
 function resetData() {
     console.log("Provenance.ts reset Data.")
     var nodeIds = nodes.map(function (node) { return node.id })
-    var neighbors = {}
 
     baseNodes.forEach(function (node) {
+
         if (nodeIds.indexOf(node.id) === -1) {
             nodes.push(node)
         }
+
         nodeElements.attr('fill', function (node) { return resetNodeColor(node) })
         textElements.attr('fill', function (node) { return resetTextColor(node) })
         linkElements.attr('stroke', function (link) { return resetLinkColor(node) })
     })
 
     links = baseLinks
-    /*
-    for (let i = 0; i < searchNodes.length; i++) {
-        searchNodes.pop();
-    }*/
 }
-
-
-/*
-// diffing and mutating the data
-function updateData(selectedNode) {
-    console.log("Provenance.ts updateData() the node being updated : " + selectedNode);
-
-    var neighbors = getNeighbors(selectedNode, baseLinks);
-
-    var newNodes = baseNodes.filter(function (node) {
-        return neighbors.indexOf(node.id) > -1 || node.level === 1
-    });
-
-    // when blocked out allows us to maintain a node upon selecting and deselecting
-
-    /*
-    var diff = {
-        removed: nodes.filter(function (node) { return newNodes.indexOf(node) === -1 }),
-        added: newNodes.filter(function (node) { return nodes.indexOf(node) === -1 })
-    }
-
-    diff.removed.forEach(function (node) { nodes.splice(nodes.indexOf(node), 1) })
-    diff.added.forEach(function (node) { nodes.push(node) })
-
-    
-    links = baseLinks.filter(function (link) {
-        return link.target === selectedNode.id || link.source === selectedNode.id
-    })
-}*/
 
 function updateGraph() {
     console.log("Provenance.ts update graph");
