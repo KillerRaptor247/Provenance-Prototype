@@ -187,6 +187,7 @@ document.onkeydown = function (e) {
 
 /***************************************************** BUTTONS *****************************************************************/
 
+
 const addNodeButton = document.getElementById('addNode');
 
 addNodeButton?.addEventListener('click', function handleClick(event) {
@@ -194,46 +195,63 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
 
     // node data
     var newLabel = prompt("Enter the name of the new node.");
-    var newNumId = parseInt(nodes[nodes.length - 1].id) + 1;
-    var newId = newNumId.toString();
 
-    // create the specifications for the new node
-    var newNode = { id: newId, group: nodes[nodes.length - 1].group, label: newLabel, level: nodes[nodes.length - 1].level, index: newNumId - 1 };
-    console.log("New node " + newNode);
+    // if newlabel is empty the user clicked 'Ok' without typing text 
+    // if newLabel is null the user selected cancel
+    if (newLabel == "" || newLabel == null) {
+        console.log("User selected cancel to adding a new node or user did not input text");
+    }
 
-    // add the new node to the list of nodes
-    nodes.push(newNode);
+    else {
 
-    // update simulation here to add new node without issues in the graph
-    updateSimulation();
+        // display to user
+        var message = "Please type the node(s) you wish to attach the new node to. If you chose to enter more than one node leave a space inbetween node names. This is case sensitive and spelling matters.";
 
-    /*
-    for (var link of links) {
-        console.log(link);
-    }*/
+        // record users response
+        var response = prompt(message);
 
-    // display to user
-    var message = "Please type the node(s) you wish to attach the new node to. If you chose to enter more than one node leave a space inbetween node names. This is case sensitive and spelling matters.";
+        // empty string means user selected cancel
+        if (response == "" || response == null) {
+            console.log("user selected cancel");
+        }
 
-    // record users response
-    var response = prompt(message);
+        else {
 
-    // parse the users response
-    var parser = response.split(" ");
+            // update simulation here to add new node without issues in the graph
+            //updateSimulation();
 
-    // iterates through the list of nodes
-    for (var node of nodes) {
+            /*
+            for (var link of links) {
+                console.log(link);
+            }*/
 
-        // iterates through the users response
-        for (var nodeName of parser) {
+            // establish node information if the user has entered valid data
+            var newNumId = parseInt(nodes[nodes.length - 1].id) + 1;
+            var newId = newNumId.toString();
+            var newNode = { id: newId, group: nodes[nodes.length - 1].group, label: newLabel, level: nodes[nodes.length - 1].level, index: newNumId - 1 };
+            console.log("New node " + newNode);
 
-            // if the name matches the users input establish a new link
-            if (nodeName == node.label) {
+            // add the new node to the list of nodes
+            nodes.push(newNode);
 
-                //var newLink = { target: newNode, source: node, strength: 0.5 };
-                //links.push(link);
+            // parse the users response
+            var parser = response.split(" ");
+
+            // iterates through the list of nodes
+            for (var node of nodes) {
+
+                // iterates through the users response
+                for (var nodeName of parser) {
+
+                    // if the name matches the users input establish a new link
+                    if (nodeName == node.label) {
+
+                        //var newLink = { target: newNode, source: node, strength: 0.5 };
+                        //links.push(link);
 
 
+                    }
+                }
             }
         }
     }
@@ -396,19 +414,27 @@ function getNodeById(nodeId) {
 
 
 function selectNodeStyle(selectedNodeStr) {
-    console.log("Provenance.ts select node by style." + selectedNodeStr);
+    console.log("Provenance.ts select node style.");
+
     let selectedNodeId = selectedNodeStr.split("_")[1];
+    console.log("Provenance.ts selected node ID " + selectedNodeId);
+
     let selectedNode = getNodeById(selectedNodeId);
+    console.log("Provenance.ts selected node ID " + selectedNode);
 
     if (selectedNode == undefined) {
+        console.log("Provenance.ts selected node is undefined.");
         selectedId = undefined
         resetData()
     }
+
     else if (selectedId != selectedNode.id) {
         selectedId = selectedNode.id;
         updateData(selectedNode)
 
         // removed updateSimulation to maintain the entire graph
+
+        // collect neighbors of the selected node
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
         nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, selectedNode) })
@@ -629,7 +655,7 @@ function updateSimulation() {
     simulation.force('link').links(links);
 
     // allows nodes to be dragged setting to zero makes graph static but lose drag capabilities
-    simulation.alphaTarget(0.1).restart();
+    simulation.alphaTarget(0.00001).restart();
 }
 
 // we call updateSimulation to trigger the initial render without the graph will not load
