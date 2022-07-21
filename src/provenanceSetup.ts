@@ -12,6 +12,7 @@ import resetNodeColor from "../utils/resetNodeColor";
 import resetTextColor from "../utils/resetTextColor";
 import resetLinkColor from "../utils/resetLinkColor";
 
+/*******************************************PROVENANCE GRAPH*********************************************************/
 /*
  * interface representing the state of the application
  */
@@ -19,7 +20,7 @@ export interface NodeState {
     selectedNode: string;
     hoveredNode: string;
     draggedNode: string;
-    //addNode: string;
+    addNode: string;
 }
 
 /*
@@ -29,11 +30,11 @@ const initialState: NodeState = {
     selectedNode: 'none',
     hoveredNode: 'none',
     draggedNode: 'none',
-    //addNode: 'none'
+    addNode: 'none'
 };
 
 // events the provenance tracking will record
-type EventTypes = 'Select Node' | 'Hover Node' | 'Drag Node' /*| 'Add Node'*/;
+type EventTypes = 'Select Node' | 'Hover Node' | 'Drag Node' | 'Add Node';
 
 // initialize provenance with the first state
 let prov = initProvenance<NodeState, EventTypes, string>(initialState, {
@@ -72,6 +73,21 @@ const dragNodeUpdate = function (newDragged: string) {
 }
 
 /*
+ * Add a node function
+ */
+const addNodeAction = createAction<NodeState, any, EventTypes>(
+    (state: NodeState, newNode: string) => {
+        state.addNode = newNode;
+        console.log("In addNodeAction");
+        return state;
+    },
+);
+const newNodeUpdate = function (newNode: string) {
+    addNodeAction.setLabel(`${newNode} added`).setEventType('Add Node');
+    prov.apply(addNodeAction(newNode));
+}
+
+/*
  * Function called when a node is hovered. Applies an action to provenance.
  */
 const hoverAction = createAction<NodeState, any, EventTypes>(
@@ -88,20 +104,6 @@ const hoverNodeUpdate = function (newHover: string) {
     prov.apply(hoverAction(newHover));
 };
 
-/*
- * Add a node function
- *
-const addNodeAction = createAction<NodeState, any, EventTypes>(
-    (state: NodeState, newNode: string) => {
-        state.addNode = newNode;
-        return state;
-    },
-);
-const newNodeUpdate = function (newNode: string) {
-    addNodeAction.setLabel('${newNode} Added').setEventType('Add Node');
-    prov.apply(addNodeAction(newNode));
-}*/
-
 // Create function to pass to the ProvVis library for when a node is selected in the graph.
 // For our purposes, were simply going to jump to the selected node.
 const visCallback = function (newNode: NodeID) {
@@ -109,18 +111,13 @@ const visCallback = function (newNode: NodeID) {
 };
 
 /*
- * Observer for when the quartet state is changed. Calls changeQuartet in scatterplot to update vis.
- * Set up observers for the three keys in state. These observers will get called either when
- * an applyAction function changes the associated keys value.
- * Also will be called when an internal graph change such as goBackNSteps, goBackOneStep or goToNode
- * change the keys value.
  * Observer for when the selected node state is changed.
  * Calls selectNode in scatterplot to update vis.
  */
 prov.addObserver(
     (state) => state.selectedNode,
     () => {
-        console.log("Provenance.ts: select node observer.");
+        console.log("Provenance graph: select node observer.");
         selectNodeStyle(prov.getState(prov.current).selectedNode)
     },
 );
@@ -128,8 +125,16 @@ prov.addObserver(
 prov.addObserver(
     (state) => state.draggedNode,
     () => {
-        console.log("Provenance.ts drag node observer");
+        console.log("Provenance graph drag node observer");
         dragNodeStyle(prov.getState(prov.current).draggedNode)
+    },
+);
+
+prov.addObserver(
+    (state) => state.addNode,
+    () => {
+        console.log("Provenance graph: select add node observer.");
+        addNodeStyle(prov.getState(prov.current).addNode)
     },
 );
 
@@ -177,15 +182,13 @@ document.onkeydown = function (e) {
     }
 };
 
+
 /***************************************************** BUTTONS *****************************************************************/
 
 const addNodeButton = document.getElementById('addNode');
 
 addNodeButton?.addEventListener('click', function handleClick(event) {
     console.log('adding a node button clicked');
-
-    // DEBUG: ensure that if a node is selected everything gets unselected so we can call updateSimulation() and maintain graph integrity
-    // DEBUG: when you select a node the new nodes go missing
 
     // node data
     var newLabel = prompt("Enter the name of the new node.");
@@ -225,6 +228,8 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
             // this generates the ndoe
             updateSimulation();
 
+            newNodeUpdate(`node_${newNode.id}`);
+
             // parse the users response
             var parser = response.split(" ");
 
@@ -248,8 +253,6 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
         }
     }
 });
-
-
 
 /*****************************************************NODE BASED GRAPH*****************************************************************/
 let nodes = [...baseNodes]                              // list of node data
@@ -378,7 +381,6 @@ function selectNode(event, selectedNode) {
         console.log("User is selecting a new node");
         selectNodeUpdate(`node_${selectedNode.id}`)
         selectedId = selectedNode.id
-        //updateData(selectedNode)
         var neighbors = getNeighbors(selectedNode, baseLinks)
 
         // we modify the styles to highlight selected nodes
@@ -388,19 +390,16 @@ function selectNode(event, selectedNode) {
     }
 }
 
+/*
+ * Get node by ID this function worries me it needs to be analyzed better
+ */ 
 function getNodeById(nodeId) {
     console.log("Provenance.ts getNode by ID ");
-
     var node = baseNodes.filter(function (node) {
-        console.log("In here " + nodeId);
         return node.id == nodeId;
     })
-
-    console.log("Now here " + JSON.stringify(node) + nodeId + node[0]);
-
     // This may need to be changed this sometimes returns undefined 
     return node[0];
-    //return nodeId;
 }
 
 
@@ -422,8 +421,6 @@ function selectNodeStyle(selectedNodeStr) {
     else if (selectedId != selectedNode.id) {
         console.log("Provenance.ts selected node exists.");
         selectedId = selectedNode.id;
-        //updateData(selectedNode)
-
         // removed updateSimulation to maintain the entire graph
 
         // collect neighbors of the selected node
@@ -434,8 +431,6 @@ function selectNodeStyle(selectedNodeStr) {
         linkElements.attr('stroke', function (link) { return getLinkColor(selectedNode, link) })
     }
 }
-
-
 
 /* 
  * Drag Functionality
@@ -476,6 +471,31 @@ function dragNodeStyle(draggedNodeStr) {
 }
 
 
+function addNodeStyle(addNodeStr) {
+    console.log("Provenance.ts add node by style");
+    console.log(addNodeStr);
+
+    let addNodeId = addNodeStr.split("_")[1];
+    let addNode = getNodeById(addNodeId);
+
+    if (addNode == undefined) {
+        selectedId = undefined
+        resetData()
+    }
+    else if (addNodeId != addNode.id) {
+
+        addNodeId = addNode.id;
+
+        // removed updateSimulation to maintain the entire graph
+        var neighbors = getNeighbors(addNode, baseLinks)
+
+        nodeElements.attr('fill', function (node) { return getNodeColor(node, neighbors, addNode) })
+        textElements.attr('fill', function (node) { return getTextColor(node, neighbors, addNode) })
+        linkElements.attr('stroke', function (link) { return getLinkColor(addNode, link) })
+    }
+}
+
+
 // this helper simple adds all nodes and links
 // that are missing, to recreate the initial state
 function resetData() {
@@ -496,9 +516,6 @@ function resetData() {
         textElements.attr('fill', function (node) { return resetTextColor(node) })
         linkElements.attr('stroke', function (link) { return resetLinkColor(node) })
     })
-
-
-    //links = baseLinks
 }
 
 function updateGraph() {
