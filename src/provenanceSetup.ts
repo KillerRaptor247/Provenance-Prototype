@@ -1,17 +1,17 @@
 import { initProvenance, NodeID, createAction } from '@visdesignlab/trrack';
 import '../styles/styles.css'
-import { ProvVisCreator }   from '@visdesignlab/trrack-vis';
-import Graph, { Plot }      from './graph';
-import * as d3              from "d3";
-import baseNodes            from '.././data/nodes'
-import baseLinks            from '.././data/links'
-import getLinkColor         from "../utils/getLinkColor"
-import getNodeColor         from "../utils/getNodeColor"
-import getTextColor         from "../utils/getTextColor"
-import getNeighbors         from "../utils/getNeighbors"
-import resetNodeColor       from "../utils/resetNodeColor";
-import resetTextColor       from "../utils/resetTextColor";
-import resetLinkColor       from "../utils/resetLinkColor";
+import { ProvVisCreator } from '@visdesignlab/trrack-vis';
+import Graph, { Plot } from './graph';
+import * as d3 from "d3";
+import baseNodes from '.././data/nodes'
+import baseLinks from '.././data/links'
+import getLinkColor from "../utils/getLinkColor"
+import getNodeColor from "../utils/getNodeColor"
+import getTextColor from "../utils/getTextColor"
+import getNeighbors from "../utils/getNeighbors"
+import resetNodeColor from "../utils/resetNodeColor";
+import resetTextColor from "../utils/resetTextColor";
+import resetLinkColor from "../utils/resetLinkColor";
 /*
  * interface representing the state of the application
  */
@@ -57,14 +57,17 @@ const selectNodeUpdate = function (newSelected: string) {
 
 /*
  * Drag node function
- */ 
+ */
 const nodeDragAction = createAction<NodeState, any, EventTypes>(
     (state: NodeState, newDragged: string) => {
         state.draggedNode = newDragged;
+        console.log("Inside node Drag Actions")
     },
 )
 const dragNodeUpdate = function (newDragged: string) {
-    nodeDragAction.setLabel('${newDragged} Moved').setEventType('Drag Node');
+    console.log("Inside drag Node update")
+
+    nodeDragAction.setLabel(`${newDragged} Moved`).setEventType('Drag Node');
     prov.apply(nodeDragAction(newDragged));
 }
 
@@ -190,12 +193,12 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
     console.log('adding a node button clicked');
 
     // node data
-    var newLabel    = prompt("Enter the name of the new node.");
-    var newNumId    = parseInt(nodes[nodes.length - 1].id) + 1;
+    var newLabel = prompt("Enter the name of the new node.");
+    var newNumId = parseInt(nodes[nodes.length - 1].id) + 1;
     var newId = newNumId.toString();
 
     // create the specifications for the new node
-    var newNode     = { id: newId, group: nodes[nodes.length - 1].group, label: newLabel, level: nodes[nodes.length - 1].level, index: newNumId - 1};
+    var newNode = { id: newId, group: nodes[nodes.length - 1].group, label: newLabel, level: nodes[nodes.length - 1].level, index: newNumId - 1 };
     console.log("New node " + newNode);
 
     // add the new node to the list of nodes
@@ -210,14 +213,14 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
     }*/
 
     // display to user
-    var message     = "Please type the node(s) you wish to attach the new node to. If you chose to enter more than one node leave a space inbetween node names. This is case sensitive and spelling matters.";
+    var message = "Please type the node(s) you wish to attach the new node to. If you chose to enter more than one node leave a space inbetween node names. This is case sensitive and spelling matters.";
 
     // record users response
-    var response    = prompt(message);
+    var response = prompt(message);
 
     // parse the users response
-    var parser = response.split(" "); 
-    
+    var parser = response.split(" ");
+
     // iterates through the list of nodes
     for (var node of nodes) {
 
@@ -230,7 +233,7 @@ addNodeButton?.addEventListener('click', function handleClick(event) {
                 //var newLink = { target: newNode, source: node, strength: 0.5 };
                 //links.push(link);
 
-           
+
             }
         }
     }
@@ -307,6 +310,8 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
     node.fx = event.x
     node.fy = event.y
+    console.log("calling dragNode")
+    dragNode('end', node)
 
 });
 
@@ -347,6 +352,10 @@ function center() {
 // we should update the data while it is being dragged
 // and update the provenance when the drag is finished
 function dragNode(event, draggedNode) {
+    console.log("Provenance.ts user finished dragging a node." + `node_${draggedNode.id}`);
+
+    dragNodeUpdate(`node_${draggedNode.id}`)
+
 
 }
 
@@ -388,8 +397,8 @@ function getNodeById(nodeId) {
 
 function selectNodeStyle(selectedNodeStr) {
     console.log("Provenance.ts select node by style." + selectedNodeStr);
-    let selectedNodeId  = selectedNodeStr.split("_")[1];
-    let selectedNode    = getNodeById(selectedNodeId);
+    let selectedNodeId = selectedNodeStr.split("_")[1];
+    let selectedNode = getNodeById(selectedNodeId);
 
     if (selectedNode == undefined) {
         selectedId = undefined
