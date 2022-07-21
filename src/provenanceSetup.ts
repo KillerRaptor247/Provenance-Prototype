@@ -480,11 +480,15 @@ function dragNodeStyle(draggedNodeStr) {
 // that are missing, to recreate the initial state
 function resetData() {
     console.log("Provenance.ts reset Data.")
+
+    // collect all node id's 
     var nodeIds = nodes.map(function (node) { return node.id })
 
     baseNodes.forEach(function (node) {
 
         if (nodeIds.indexOf(node.id) === -1) {
+
+            console.log("Pushing nodes " + node.id);
             nodes.push(node)
         }
 
@@ -493,7 +497,8 @@ function resetData() {
         linkElements.attr('stroke', function (link) { return resetLinkColor(node) })
     })
 
-    links = baseLinks
+
+    //links = baseLinks
 }
 
 function updateGraph() {
