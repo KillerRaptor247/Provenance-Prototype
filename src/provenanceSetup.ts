@@ -1,18 +1,17 @@
 import { initProvenance, NodeID, createAction } from '@visdesignlab/trrack';
 import '../styles/styles.css'
-import { ProvVisCreator } from '@visdesignlab/trrack-vis';
-import Graph, { Plot } from './graph';
-import * as d3 from "d3";
-import baseNodes from '.././data/nodes'
-import baseLinks from '.././data/links'
-import getLinkColor from "../utils/getLinkColor"
-import getNodeColor from "../utils/getNodeColor"
-import getTextColor from "../utils/getTextColor"
-import getNeighbors from "../utils/getNeighbors"
-import resetNodeColor from "../utils/resetNodeColor";
-import resetTextColor from "../utils/resetTextColor";
-import resetLinkColor from "../utils/resetLinkColor";
-
+import { ProvVisCreator }   from '@visdesignlab/trrack-vis';
+import Graph, { Plot }      from './graph';
+import * as d3              from "d3";
+import baseNodes            from '.././data/nodes'
+import baseLinks            from '.././data/links'
+import getLinkColor         from "../utils/getLinkColor"
+import getNodeColor         from "../utils/getNodeColor"
+import getTextColor         from "../utils/getTextColor"
+import getNeighbors         from "../utils/getNeighbors"
+import resetNodeColor       from "../utils/resetNodeColor";
+import resetTextColor       from "../utils/resetTextColor";
+import resetLinkColor       from "../utils/resetLinkColor";
 /*
  * interface representing the state of the application
  */
@@ -51,7 +50,7 @@ const nodeSelectAction = createAction<NodeState, any, EventTypes>(
     },
 );
 const selectNodeUpdate = function (newSelected: string) {
-    console.log("INSIDE SELECT NODE update");
+    console.log("Provenance.ts select node update");
     nodeSelectAction.setLabel(`${newSelected} Selected`).setEventType('Select Node');
     prov.apply(nodeSelectAction(newSelected));
 };
@@ -126,7 +125,7 @@ prov.addObserver(
     () => {
         // This works as well
         // selectNodeStyle(prov.getState(prov.current).selectedNode)
-        console.log("INSIDE SELECT NODE OBSERVER");
+        console.log("Provenance.ts: select node observer.");
         selectNodeStyle(prov.getState(prov.current).selectedNode)
         // graph.selectNode(prov.getState(prov.current).selectedNode);
     },
@@ -135,28 +134,30 @@ prov.addObserver(
 prov.addObserver(
     (state) => state.draggedNode,
     () => {
+        console.log("Provenance.ts drag node observer");
         dragNodeStyle(prov.getState(prov.current).draggedNode)
     },
 );
 
 /**
  * Observer for when the hovered node state is changed. Calls hoverNode in scatterplot to update vis.
- */
+ *
 prov.addObserver(
     (state) => state.hoveredNode,
     () => {
-        console.log("INSIDE SELECT NODE HOVER");
+        console.log("Provenance.ts hover node observer");
         graph.hoverNode(prov.getState(prov.current).hoveredNode);
     },
-);
+);*/
 
 prov.done();
 
-// Setup ProvVis once initially
+// Setup ProvVis once initially use ID found in the index.html file 'provDiv'
 ProvVisCreator(document.getElementById('provDiv')!, prov, visCallback);
 
 // Undo function which simply goes one step backwards in the graph.
 function undo() {
+    console.log("User clicked undo");
     prov.goBackOneStep();
 }
 
@@ -170,11 +171,13 @@ function redo() {
 
 // Setting up undo/redo hotkey to typical buttons
 document.onkeydown = function (e) {
+    console.log("User clicked redo");
     const mac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     if (!e.shiftKey && (mac ? e.metaKey : e.ctrlKey) && e.which === 90) {
         undo();
-    } else if (e.shiftKey && (mac ? e.metaKey : e.ctrlKey) && e.which === 90) {
+    }
+    else if (e.shiftKey && (mac ? e.metaKey : e.ctrlKey) && e.which === 90) {
         redo();
     }
 };
@@ -185,18 +188,55 @@ const addNodeButton = document.getElementById('addNode');
 
 addNodeButton?.addEventListener('click', function handleClick(event) {
     console.log('adding a node button clicked');
-    console.log(event);
-    console.log(event.target);
+
+    // node data
+    var newLabel    = prompt("Enter the name of the new node.");
+    var newNumId    = parseInt(nodes[nodes.length - 1].id) + 1;
+    var newId = newNumId.toString();
+
+    // create the specifications for the new node
+    var newNode     = { id: newId, group: nodes[nodes.length - 1].group, label: newLabel, level: nodes[nodes.length - 1].level, index: newNumId - 1};
+    console.log("New node " + newNode);
+
+    // add the new node to the list of nodes
+    nodes.push(newNode);
+
+    // update simulation here to add new node without issues in the graph
+    updateSimulation();
+
+    /*
+    for (var link of links) {
+        console.log(link);
+    }*/
+
+    // display to user
+    var message     = "Please type the node(s) you wish to attach the new node to. If you chose to enter more than one node leave a space inbetween node names. This is case sensitive and spelling matters.";
+
+    // record users response
+    var response    = prompt(message);
+
+    // parse the users response
+    var parser = response.split(" "); 
+    
+    // iterates through the list of nodes
+    for (var node of nodes) {
+
+        // iterates through the users response
+        for (var nodeName of parser) {
+
+            // if the name matches the users input establish a new link
+            if (nodeName == node.label) {
+
+                //var newLink = { target: newNode, source: node, strength: 0.5 };
+                //links.push(link);
+
+           
+            }
+        }
+    }
 });
 
 
-const removeNodeButton = document.getElementById('removeNode');
-
-removeNodeButton?.addEventListener('click', function handleClick(event) {
-    console.log('removing a node button clicked');
-    console.log(event);
-    console.log(event.target);
-});
 
 /*****************************************************NODE BASED GRAPH*****************************************************************/
 let nodes = [...baseNodes]                              // list of node data
@@ -242,6 +282,7 @@ var simulation = d3
  */
 var dragDrop = d3.drag().on('start', function (event, node) {
 
+    console.log("Drag on start");
     // this line of code ensures the graph does not move at all after a node has been moved
     simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = node.x
@@ -249,6 +290,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
 }).on('drag', function (event, node) {
 
+    console.log("Drag on drag");
     // this line of code ensures the graph does not move at all after a node has been moved
     simulation.force("link", null).force("charge", null).force("center", null);
     node.fx = event.x
@@ -256,6 +298,7 @@ var dragDrop = d3.drag().on('start', function (event, node) {
 
 }).on('end', function (event, node) {
 
+    console.log("Drag on end");
     if (!event.active) {
 
         // this line of code ensures the graph does not move at all after a node has been moved
@@ -311,8 +354,7 @@ function dragNode(event, draggedNode) {
 // we either update the data according to the selection
 // or reset the data if the same node is clicked twice
 function selectNode(event, selectedNode) {
-    console.log("User selected a node.")
-    console.log(`node_${selectedNode.id}`);
+    console.log("Provenance.ts user selected a node." + `node_${selectedNode.id}`);
 
     if (selectedId === selectedNode.id) {
         selectedId = undefined
@@ -333,31 +375,27 @@ function selectNode(event, selectedNode) {
 }
 
 function getNodeById(nodeId) {
-    console.log("Collecting node by ID.")
 
     var node = baseNodes.filter(function (node) {
         return node.id == nodeId
     })
+
+    console.log("Provenance.ts getNode by ID " + node);
+
     return node[0];
 }
 
 
 function selectNodeStyle(selectedNodeStr) {
-    console.log("select node by style");
-    console.log(selectedNodeStr);
-
-    let selectedNodeId = selectedNodeStr.split("_")[1];
-    let selectedNode = getNodeById(selectedNodeId);
-
-    console.log(selectedNode);
+    console.log("Provenance.ts select node by style." + selectedNodeStr);
+    let selectedNodeId  = selectedNodeStr.split("_")[1];
+    let selectedNode    = getNodeById(selectedNodeId);
 
     if (selectedNode == undefined) {
         selectedId = undefined
         resetData()
     }
     else if (selectedId != selectedNode.id) {
-
-
         selectedId = selectedNode.id;
         updateData(selectedNode)
 
@@ -371,7 +409,7 @@ function selectNodeStyle(selectedNodeStr) {
 }
 
 function dragNodeStyle(draggedNodeStr) {
-    console.log("select node by style");
+    console.log("Provenance.ts drag node by style");
     console.log(draggedNodeStr);
 
     let draggedNodeId = draggedNodeStr.split("_")[1];
@@ -384,7 +422,6 @@ function dragNodeStyle(draggedNodeStr) {
         resetData()
     }
     else if (draggedId != draggedNode.id) {
-
 
         draggedId = draggedNode.id;
         updateData(draggedNode)
@@ -451,7 +488,7 @@ export function resetNodeExplicit() {
 // this helper simple adds all nodes and links
 // that are missing, to recreate the initial state
 function resetData() {
-    console.log("reset Data.")
+    console.log("Provenance.ts reset Data.")
     var nodeIds = nodes.map(function (node) { return node.id })
     var neighbors = {}
 
@@ -474,10 +511,13 @@ function resetData() {
 
 // diffing and mutating the data
 function updateData(selectedNode) {
-    var neighbors = getNeighbors(selectedNode, baseLinks)
+    console.log("Provenance.ts update data : " + selectedNode);
+
+    var neighbors = getNeighbors(selectedNode, baseLinks);
+
     var newNodes = baseNodes.filter(function (node) {
         return neighbors.indexOf(node.id) > -1 || node.level === 1
-    })
+    });
 
     var diff = {
         removed: nodes.filter(function (node) { return newNodes.indexOf(node) === -1 }),
@@ -493,6 +533,8 @@ function updateData(selectedNode) {
 }
 
 function updateGraph() {
+    console.log("Provenance.ts update graph");
+
     // links
     linkElements = linkGroup.selectAll('line')
         .data(links, function (link) {
@@ -557,7 +599,7 @@ function updateGraph() {
 }
 
 function updateSimulation() {
-
+    console.log("Provenance.ts update simulation");
     updateGraph()
 
     simulation.nodes(nodes).on('tick', () => {
@@ -577,8 +619,8 @@ function updateSimulation() {
     // creates links for graph
     simulation.force('link').links(links);
 
-    // allows nodes to be dragged 
-    simulation.alphaTarget(0.7).restart();
+    // allows nodes to be dragged setting to zero makes graph static but lose drag capabilities
+    simulation.alphaTarget(0.1).restart();
 }
 
 // we call updateSimulation to trigger the initial render without the graph will not load

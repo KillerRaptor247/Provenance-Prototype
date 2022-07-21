@@ -125,6 +125,8 @@ div.tooltip {
     pointer-events: none;
 }
 
+
+/* Title */
 #headerDiv {
   text-align: center;
   font-family: 'Times New Roman';
@@ -134,20 +136,27 @@ div.tooltip {
   top: -60px;
 }
 
+
+/* Provenance node graph */
 #graph {
   max-height: 800px;
   display: flex;
 }
 
+
+/* provenance tree graph */
 #provDiv {
   max-width: 300px;
   display:flex;
 }
 
+
+/* container that holds both graphs */
 #parent {
     display: flex;
     justify-content: right;
 }
+
 
 body {
   margin: 0;
@@ -228,6 +237,7 @@ body {
   font-family: "Lato", sans-serif;
 }
 
+/* side navigation bar */
 .sidenav {
   height: 100%;
   width: 160px;
